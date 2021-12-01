@@ -77,19 +77,15 @@ typedef struct
     struct QUESTION *ques;
 } QUERY;
 
-int main( int argc , char *argv[])
+int main(int argc , char *argv[])
 {
-    unsigned char hostname[100];
-
-    //Get the DNS servers from the resolv.conf file
-    get_dns_servers();
-
+    char* hostname;
     //Get the hostname from the terminal
     printf("Enter Hostname to Lookup : ");
     scanf("%s" , hostname);
 
     //Now get the ip of this hostname , A record
-    printf("%s\n", ngethostbyname(hostname , T_A));
+    printf("%s\n", getHostByName(hostname));
 
     return 0;
 }
@@ -97,8 +93,11 @@ int main( int argc , char *argv[])
 /*
  * Perform a DNS query by sending a packet
  * */
-char* ngethostbyname(unsigned char *host , int query_type)
+char* getHostByName(char* host)
 {
+    //Get the DNS servers from the resolv.conf file
+    getDnsServers();
+
     unsigned char buf[65536],*qname,*reader;
     int i , j , stop , s;
 
@@ -137,9 +136,9 @@ char* ngethostbyname(unsigned char *host , int query_type)
 
     //point to the query portion
     qname =(unsigned char*)&buf[sizeof(struct DNS_HEADER)];
-    ChangetoDnsNameFormat(qname, host);
+    changeToDnsNameFormat(qname, host);
     qinfo =(struct QUESTION*)&buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)];
-    qinfo->qtype = htons( query_type ); //type of the query , A , MX , CNAME , NS etc
+    qinfo->qtype = htons( T_A ); //type of the query , A , MX , CNAME , NS etc
     qinfo->qclass = htons(1);
 
     if( sendto(s,
@@ -169,7 +168,7 @@ char* ngethostbyname(unsigned char *host , int query_type)
 
     for(i=0;i<ntohs(dns->ans_count);i++)
     {
-        answers[i].name=ReadName(reader,buf,&stop);
+        answers[i].name = readName(reader,buf,&stop);
         reader = reader + stop;
 
         answers[i].resource = (struct R_DATA*)(reader);
@@ -185,12 +184,11 @@ char* ngethostbyname(unsigned char *host , int query_type)
             }
 
             answers[i].rdata[ntohs(answers[i].resource->data_len)] = '\0';
-
             reader = reader + ntohs(answers[i].resource->data_len);
         }
         else
         {
-            answers[i].rdata = ReadName(reader,buf,&stop);
+            answers[i].rdata = readName(reader,buf,&stop);
             reader = reader + stop;
         }
     }
@@ -198,20 +196,20 @@ char* ngethostbyname(unsigned char *host , int query_type)
     //read authorities
     for(i=0;i<ntohs(dns->auth_count);i++)
     {
-        auth[i].name=ReadName(reader,buf,&stop);
+        auth[i].name = readName(reader,buf,&stop);
         reader+=stop;
 
         auth[i].resource=(struct R_DATA*)(reader);
         reader+=sizeof(struct R_DATA);
 
-        auth[i].rdata=ReadName(reader,buf,&stop);
+        auth[i].rdata = readName(reader,buf,&stop);
         reader+=stop;
     }
 
     //read additional
     for(i=0;i<ntohs(dns->add_count);i++)
     {
-        addit[i].name=ReadName(reader,buf,&stop);
+        addit[i].name = readName(reader,buf,&stop);
         reader+=stop;
 
         addit[i].resource=(struct R_DATA*)(reader);
@@ -228,12 +226,11 @@ char* ngethostbyname(unsigned char *host , int query_type)
         }
         else
         {
-            addit[i].rdata=ReadName(reader,buf,&stop);
+            addit[i].rdata = readName(reader,buf,&stop);
             reader+=stop;
         }
     }
 
-    //print answers
     char* answer;
     for(i=0 ; i < ntohs(dns->ans_count) ; i++) {
         if (ntohs(answers[i].resource->type) == T_A) //IPv4 address
@@ -250,7 +247,7 @@ char* ngethostbyname(unsigned char *host , int query_type)
 /*
  *
  * */
-u_char* ReadName(unsigned char* reader,unsigned char* buffer,int* count)
+u_char* readName(unsigned char* reader,unsigned char* buffer,int* count)
 {
     unsigned char *name;
     unsigned int p=0,jumped=0,offset;
@@ -305,7 +302,7 @@ u_char* ReadName(unsigned char* reader,unsigned char* buffer,int* count)
 /*
  * Get the DNS servers from /etc/resolv.conf file on Linux
  * */
-void get_dns_servers()
+void getDnsServers()
 {
     FILE *fp;
     char line[200] , *p;
@@ -334,7 +331,7 @@ void get_dns_servers()
 /*
  * This will convert www.google.com to 3www6google3com
  */
-void ChangetoDnsNameFormat(unsigned char* dns,unsigned char* host)
+void changeToDnsNameFormat(unsigned char* dns, char* host)
 {
     int lock = 0 , i;
     strcat((char*)host,".");
