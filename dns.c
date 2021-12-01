@@ -79,7 +79,7 @@ typedef struct
 
 int main(int argc , char *argv[])
 {
-    char* hostname;
+    char* hostname = malloc(100);
     //Get the hostname from the terminal
     printf("Enter Hostname to Lookup : ");
     scanf("%s" , hostname);
