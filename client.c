@@ -6,14 +6,14 @@
 #include <netinet/in.h> 
 #include <arpa/inet.h>
 #include <string.h> 
-#define PORT 443
+#define PORT 80
    
 int main(int argc, char const *argv[]) 
 { 
     struct sockaddr_in address; 
     int sock = 0, valread; 
     struct sockaddr_in serv_addr; 
-    char *hello = "Hello from client"; 
+    char *hello = "GET / HTTP/1.1\r\nHost: www.google.com\r\nUser-Agent: curl/7.64.1\r\nAccept: */*\r\nConnection: close\r\n\r\n";
     char buffer[1024] = {0}; 
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) 
     { 
@@ -27,6 +27,8 @@ int main(int argc, char const *argv[])
     serv_addr.sin_port = htons(PORT); 
        
     // Convert IPv4 and IPv6 addresses from text to binary form 
+    // 172.217.14.110
+    // 23.185.0.3
     if(inet_pton(AF_INET, "172.217.14.110", &serv_addr.sin_addr)<=0)  
     { 
         printf("Invalid address/ Address not supported"); 
