@@ -8,7 +8,7 @@
 #include<arpa/inet.h>	//inet_addr , inet_ntoa , ntohs etc
 #include<netinet/in.h>
 #include<unistd.h>	//getpid
-#include<dns.h>
+#include"dns.h"
 
 //List of DNS Servers registered on the system
 char dns_servers[10][100];
@@ -20,12 +20,6 @@ int dns_server_count = 0;
 #define T_SOA 6 /* start of authority zone */
 #define T_PTR 12 /* domain name pointer */
 #define T_MX 15 //Mail server
-
-//Function Prototypes
-char* ngethostbyname (unsigned char*, int);
-void ChangetoDnsNameFormat (unsigned char*, unsigned char*);
-unsigned char* ReadName (unsigned char*, unsigned char*, int*);
-void get_dns_servers();
 
 //DNS header structure
 struct DNS_HEADER
@@ -144,9 +138,9 @@ char* ngethostbyname(unsigned char *host , int query_type)
     //point to the query portion
     qname =(unsigned char*)&buf[sizeof(struct DNS_HEADER)];
     ChangetoDnsNameFormat(qname, host);
-    qinfo =(struct QUESTION*)&buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)]; //fill it
+    qinfo =(struct QUESTION*)&buf[sizeof(struct DNS_HEADER) + (strlen((const char*)qname) + 1)];
     qinfo->qtype = htons( query_type ); //type of the query , A , MX , CNAME , NS etc
-    qinfo->qclass = htons(1); //its internet (lol)
+    qinfo->qclass = htons(1);
 
     if( sendto(s,
                (char*)buf,
