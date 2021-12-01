@@ -14,7 +14,7 @@ int main(int argc, char const *argv[])
     struct sockaddr_in address;
     int sock = 0, valread;
     struct sockaddr_in serv_addr;
-    char* hostname;
+    char hostname[100];
 
     // Get requested domain name from user
     printf("Please enter a domain name: ");
@@ -22,9 +22,13 @@ int main(int argc, char const *argv[])
 
     // Create custom HTTP request
     // Having trouble adding 'hostname' into the middle of
-    char* request = "GET / HTTP/1.1\r\nHost: ";
+    char request[500];
+
+    strcpy(request, "GET / HTTP/1.1\r\nHost: ");
     strcat(request, hostname);
-    strcat(request, "%s\r\nUser-Agent: curl/7.64.1\r\nAccept: */*\r\nConnection: close\r\n\r\n");
+    strcat(request, "\r\nUser-Agent: curl/7.64.1\r\nAccept: */*\r\nConnection: close\r\n\r\n");
+    printf("%s", request);
+    fflush(stdout);
 
     char buffer[1024] = {0};
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)

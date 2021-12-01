@@ -77,18 +77,18 @@ typedef struct
     struct QUESTION *ques;
 } QUERY;
 
-int main(int argc , char *argv[])
-{
-    char* hostname;
-    //Get the hostname from the terminal
-    printf("Enter Hostname to Lookup : ");
-    scanf("%s" , hostname);
+// int main(int argc , char *argv[])
+// {
+//     char* hostname;
+//     //Get the hostname from the terminal
+//     printf("Enter Hostname to Lookup : ");
+//     scanf("%s" , hostname);
 
-    //Now get the ip of this hostname , A record
-    printf("%s\n", getHostByName(hostname));
+//     //Now get the ip of this hostname , A record
+//     printf("%s\n", getHostByName(hostname));
 
-    return 0;
-}
+//     return 0;
+// }
 
 /*
  * Perform a DNS query by sending a packet
