@@ -1,7 +1,3 @@
-//
-// Created by Jonah Winchell on 11/30/21.
-//
-
 #ifndef DNS_H
 #define DNS_H
 
